@@ -3,7 +3,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from users.pagination import MediumPage
-from users.serializer import UserSerializer, UserRegistrationSerializer
+from users.serializer import UserSerializer
 from users.models import CustomUser
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
