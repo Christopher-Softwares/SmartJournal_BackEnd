@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-eg)n(#$9qoknclg@)u5262q*zrjw)9s-y2v$bw(5hl#-n(iea9
 deploy = False
 if(deploy):
     # deploy
-    SECRET_KEY = "0e0c85d8b3b8a7c59b83dc66fd25f5021136bec8ebc1f1c5330c8f50e7fc4ac826a9dca0e30498d979a5a110f6e9daad1b74"
+    SECRET_KEY = os.getenv("SECRET_KEY")
     DEBUG = os.getenv('DEBUG', 'LIARA_URL is not set.')
     
 else:
