@@ -58,12 +58,10 @@ class GetUsersListAPIView(generics.ListAPIView):
     search_fields =  ['username', 'first_name', 'last_name']
     
 
-class GetUserByIdAPIView(StandardRetrieveAPIView):
+class GetAuthenticatedUser(StandardRetrieveAPIView):
     queryset = CustomUser.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
     
     def get_object(self):
-        user_id = self.kwargs['id']
-        user = get_object_or_404(CustomUser, id=user_id)
-        return user
+        return self.request.user
