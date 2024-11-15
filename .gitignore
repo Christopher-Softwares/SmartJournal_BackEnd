@@ -1,2 +1,11 @@
+<<<<<<< Updated upstream
 *.sqlite3
 .env
+=======
+venv/
+venv
+.env
+__pycache__/
+media/
+*.sqlite3
+>>>>>>> Stashed changes
