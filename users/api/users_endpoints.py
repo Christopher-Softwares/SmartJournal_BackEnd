@@ -8,8 +8,15 @@ from users.models import CustomUser
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.shortcuts import get_object_or_404
 
 from django.contrib.auth.models import BaseUserManager
+
+from utils.response_wrapper import (
+    standard_response, 
+    StandardRetrieveAPIView,
+    StandardListAPIView,
+    )
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -49,3 +56,14 @@ class GetUsersListAPIView(generics.ListAPIView):
     serializer_class = UserSerializer
     filter_backends = [SearchFilter]
     search_fields =  ['username', 'first_name', 'last_name']
+    
+
+class GetUserByIdAPIView(StandardRetrieveAPIView):
+    queryset = CustomUser.objects.all()
+    permission_classes = [AllowAny]
+    serializer_class = UserSerializer
+    
+    def get_object(self):
+        user_id = self.kwargs['id']
+        user = get_object_or_404(CustomUser, id=user_id)
+        return user
