@@ -28,3 +28,17 @@ class Page(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Tag(models.Model):
+    """
+    Tag model to categorize pages within a workspace.
+    """
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    workspace = models.ForeignKey(Workspace, related_name="tags", on_delete=models.CASCADE)
+    pages = models.ManyToManyField(Page, related_name="tags", blank=True)
+
+    def __str__(self):
+        return self.name
+

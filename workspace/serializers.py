@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from workspace.models import Workspace
-from workspace.models import Page
+from workspace.models import Page, Tag
 from django.contrib.auth.models import User
 from users.serializer import UserSerializer
 
@@ -67,3 +67,15 @@ class RemovePageSerializer(serializers.Serializer):
         instance.pages.remove(*pages_to_remove)
         instance.save()
         return instance
+
+
+class TagSerializer(serializers.ModelSerializer):
+    
+    pages = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Page.objects.all(), required=False
+    )
+    
+    class Meta:
+        model = Tag
+        fields = ['id', 'name', 'description', 'pages']
+        read_only_fields = ['id']
