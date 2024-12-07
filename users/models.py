@@ -15,6 +15,7 @@ class CustomUserManager(BaseUserManager):
             raise ValueError("Password Address must be provided")
         
         email = self.normalize_email(email)
+        other_fields.setdefault('is_active', True)
         user = self.model(email=email, username=username, **other_fields)
         user.set_password(password)
         user.save()        

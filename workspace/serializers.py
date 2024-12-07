@@ -3,50 +3,65 @@ from workspace.models import Workspace
 from workspace.models import Page, Tag
 from django.contrib.auth.models import User
 from users.serializer import UserSerializer
+from rest_framework import serializers
+from .models import Workspace
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
-class WorkspaceCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Workspace
-        fields = ['id', 'name', 'description']
-        read_only_fields = ["owner"]
-
-    def create(self, validated_data):
-        validated_data['owner'] = self.context['request'].user
-        return super().create(validated_data)
-
-class PageSerializer():
+class PageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
         fields = ['id', 'title']
         read_only_fields = ['id']
 
 class WorkspaceDetailSerializer(serializers.ModelSerializer):
-    members = UserSerializer()
-    pages = PageSerializer()
+    members = UserSerializer(many=True)
+    pages = PageSerializer(many=True)
     class Meta:
         model = Workspace
         fields = '__all__'
 
-class AddMemberSerializer(serializers.Serializer):
-    member_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True)
+class AddMembersSerializer(serializers.Serializer):
+    member_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        help_text="List of user IDs to add to the workspace."
+    )
 
-    def update(self, instance, validated_data):
-        member_ids = validated_data['member_ids']
-        members_to_add = User.objects.filter(id__in=member_ids)
-        instance.members.add(*members_to_add)
-        instance.save()
-        return instance
+    def validate_member_ids(self, value):
+        # Ensure all users exist
+        existing_users = User.objects.filter(id__in=value)
+        if len(existing_users) != len(value):
+            invalid_ids = set(value) - set(existing_users.values_list('id', flat=True))
+            raise serializers.ValidationError(f"Invalid user IDs: {list(invalid_ids)}")
+        return value
 
 class RemoveMemberSerializer(serializers.Serializer):
-    member_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True)
+    member_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        help_text="List of user IDs to remove from the workspace."
+    )
 
-    def update(self, instance, validated_data):
-        member_ids = validated_data['member_ids']
-        members_to_remove = User.objects.filter(id__in=member_ids)
-        instance.members.remove(*members_to_remove)
-        instance.save()
-        return instance
+    def validate(self, data):
+        # Ensure the workspace exists in the context
+        workspace = self.context.get('workspace')
+        if not workspace:
+            raise serializers.ValidationError("Workspace is required for member removal.")
+
+        # Check if all members exist in the workspace
+        invalid_members = [
+            member_id for member_id in data['member_ids']
+            if not workspace.members.filter(id=member_id).exists()
+        ]
+
+        if invalid_members:
+            raise serializers.ValidationError(
+                {"member_ids": f"Users with IDs {invalid_members} are not members of this workspace."}
+            )
+        return data
+
 
 class AddPageSerializer(serializers.Serializer):
     page_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True)

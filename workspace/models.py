@@ -7,7 +7,7 @@ class Workspace(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="owned_workspaces")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ownedworkspaces")
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="workspaces")
     
     pages = models.ManyToManyField("Page", blank=True)
