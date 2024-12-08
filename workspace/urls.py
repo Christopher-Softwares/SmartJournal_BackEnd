@@ -9,7 +9,11 @@ from .views import (
     WorkspaceViewSet,
     RemoveMembersAPIView,
     GetOwnedWorkspaces,
-    GetMemberWorkspaces
+    GetMemberWorkspaces,
+    CreateFolderAPIView,
+    UpdateFolderAPIView,
+    DeleteFolderAPIView,
+    UpdateFolderAPIView,
 )
 
 router = DefaultRouter()
@@ -25,4 +29,9 @@ urlpatterns = [
     path('tags/<int:pk>/update/', UpdateTagAPIView.as_view(), name='update-tag'),
     path('workspaces/<int:workspace_id>/tags/<int:tag_id>/pages/<int:page_id>/attach/', AttachPageToTagAPIView.as_view(), name='attach-page-to-tag'),
     path('workspaces/<int:workspace_id>/tags/<int:tag_id>/pages/<int:page_id>/detach/', DetachPageFromTagAPIView.as_view(), name='detach-page-from-tag'),
+
+    # folder addresses
+    path('folder/create/', CreateFolderAPIView.as_view(), name='create-folder'),
+    path('folders/<int:pk>/delete/', DeleteFolderAPIView.as_view(), name='delete-folder'),
+    path('folder/update/', UpdateFolderAPIView.as_view(), name='update-folder'),
 ]
