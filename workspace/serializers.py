@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from workspace.models import Workspace
-from workspace.models import Page, Tag
+from workspace.models import Page, Tag, Folder
 from django.contrib.auth.models import User
 from users.serializer import UserSerializer
 from rest_framework import serializers
@@ -94,3 +94,42 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ['id', 'name', 'description', 'pages']
         read_only_fields = ['id']
+
+
+class CreateFolderSerializer(serializers.ModelSerializer):
+    
+    workspace_id = serializers.IntegerField(write_only=True)
+    folder_name = serializers.CharField(max_length=255)
+    
+    class Meta:
+        model = Folder
+        fields = ["workspace_id", "folder_name"]
+        
+        
+    def validate_workspace_id(self, value):
+        if not Workspace.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Workspace with this ID does not exist.")
+        return value
+    
+    
+    def create(self, validated_data):
+        folder_name = validated_data.pop("folder_name")
+        workspace_id = validated_data.pop("workspace_id")
+
+        data = {
+            "title": folder_name,
+            "workspace_id": workspace_id
+        }
+
+        folder = Folder.objects.create(**data)
+        
+        return folder
+
+
+class UpdateFolderSerializer(serializers.ModelSerializer):
+    folder_id = serializers.IntegerField()
+    folder_name = serializers.CharField(max_length=255)
+    
+    class Meta:
+        model = Folder
+        fields = ["folder_id", "folder_name"]
