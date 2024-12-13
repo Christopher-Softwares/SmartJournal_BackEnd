@@ -173,3 +173,10 @@ class NotesFilterSerializer(serializers.Serializer):
             if invalid_tags:
                 raise serializers.ValidationError(f"Invalid tag IDs: {', '.join(map(str, invalid_tags))}")
         return value
+    
+
+class NoteContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Note
+        fields = ["id", "title", "content", "created_at", "updated_at"]
+    
