@@ -2,12 +2,15 @@ from utils.response_wrapper import (
     standard_response,
     StandardCreateAPIView,
     StandardUpdateAPIView,
+    StandardRetrieveAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, generics
-from note.serializers import AddNoteSerializer, SaveNoteContentSerializer, NotesFilterSerializer
+from note.serializers import AddNoteSerializer, SaveNoteContentSerializer, NotesFilterSerializer, NoteContentSerializer
 from note.models import Note
+from note import permissions
 from workspace.models import Workspace, Folder
+from django.shortcuts import get_object_or_404
 
 
 class CreateNoteAPIView(StandardCreateAPIView):
@@ -122,3 +125,15 @@ class FilterNotesView(generics.GenericAPIView):
             status_code=status.HTTP_200_OK,
         )
         
+class GetNoteContent(StandardRetrieveAPIView):
+    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
+    serializer_class = NoteContentSerializer
+    
+    def get_object(self):
+        note_id = self.kwargs.get("note_id")
+        note = get_object_or_404(Note, id=note_id)
+        
+        self.check_object_permissions(self.request, note)
+
+        return note    
+    
