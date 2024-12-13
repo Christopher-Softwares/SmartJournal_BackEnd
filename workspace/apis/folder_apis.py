@@ -6,7 +6,7 @@ from utils.response_wrapper import (
     standard_response
 ) 
 from django.shortcuts import get_object_or_404
-from workspace.models import Workspace, Tag, Page, Folder
+from workspace.models import Workspace, Folder
 from workspace.serializers import CreateFolderSerializer, UpdateFolderSerializer
 from workspace import permissions
 from rest_framework.permissions import IsAuthenticated
@@ -71,7 +71,7 @@ class DeleteFolderAPIView(StandardDestroyAPIView):
         return folder
     
     def perform_destroy(self, instance):
-        if instance.pages.exists():
+        if instance.notes.exists():
             raise ValidationError("Folder is not empty.")
         
         instance.delete()
