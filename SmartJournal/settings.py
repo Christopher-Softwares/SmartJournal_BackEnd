@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     # apps
     'users',
     'workspace',
+    'chat',
+    'note',
 
     #third-party
     'drf_spectacular',

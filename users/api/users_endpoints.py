@@ -7,7 +7,6 @@ from users.serializer import UserSerializer, UserSignUpSerializer, UserPasswordC
 from users.models import CustomUser
 from rest_framework.filters import SearchFilter
 from django.contrib.auth import authenticate
-
     
 class GetUsersList(generics.ListAPIView):
     """

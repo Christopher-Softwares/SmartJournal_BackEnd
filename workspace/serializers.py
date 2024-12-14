@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from workspace.models import Workspace
-from workspace.models import Page, Tag
+from workspace.models import Folder
 from django.contrib.auth.models import User
 from users.serializer import UserSerializer
 from rest_framework import serializers
@@ -9,15 +9,9 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class PageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Page
-        fields = ['id', 'title']
-        read_only_fields = ['id']
 
 class WorkspaceDetailSerializer(serializers.ModelSerializer):
     members = UserSerializer(many=True)
-    pages = PageSerializer(many=True)
     class Meta:
         model = Workspace
         fields = '__all__'
@@ -63,34 +57,42 @@ class RemoveMemberSerializer(serializers.Serializer):
         return data
 
 
-class AddPageSerializer(serializers.Serializer):
-    page_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True)
-
-    def update(self, instance, validated_data):
-        page_ids = validated_data['page_ids']
-        pages_to_add = Page.objects.filter(id__in=page_ids)
-        instance.pages.add(*pages_to_add)
-        instance.save()
-        return instance
-
-class RemovePageSerializer(serializers.Serializer):
-    page_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True)
-
-    def update(self, instance, validated_data):
-        page_ids = validated_data['page_ids']
-        pages_to_remove = Page.objects.filter(id__in=page_ids)
-        instance.pages.remove(*pages_to_remove)
-        instance.save()
-        return instance
 
 
-class TagSerializer(serializers.ModelSerializer):
+class CreateFolderSerializer(serializers.ModelSerializer):
     
-    pages = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Page.objects.all(), required=False
-    )
+    workspace_id = serializers.IntegerField(write_only=True)
+    folder_name = serializers.CharField(max_length=255)
     
     class Meta:
-        model = Tag
-        fields = ['id', 'name', 'description', 'pages']
-        read_only_fields = ['id']
+        model = Folder
+        fields = ["workspace_id", "folder_name"]
+        
+        
+    def validate_workspace_id(self, value):
+        if not Workspace.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Workspace with this ID does not exist.")
+        return value
+    
+    
+    def create(self, validated_data):
+        folder_name = validated_data.pop("folder_name")
+        workspace_id = validated_data.pop("workspace_id")
+
+        data = {
+            "title": folder_name,
+            "workspace_id": workspace_id
+        }
+
+        folder = Folder.objects.create(**data)
+        
+        return folder
+
+
+class UpdateFolderSerializer(serializers.ModelSerializer):
+    folder_id = serializers.IntegerField()
+    folder_name = serializers.CharField(max_length=255)
+    
+    class Meta:
+        model = Folder
+        fields = ["folder_id", "folder_name"]

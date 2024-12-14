@@ -3,7 +3,6 @@ from rest_framework.validators import UniqueValidator
 from users.models import CustomUser
 from django.contrib.auth.password_validation import validate_password
 
-
 class UserSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(required=False)
     class Meta:
