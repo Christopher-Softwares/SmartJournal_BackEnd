@@ -1,3 +1,2 @@
 from django.shortcuts import render
-
-# Create your views here.
+from chat.api.chat_endpoints import *
