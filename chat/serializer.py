@@ -8,7 +8,7 @@ class ChatSerializer(serializers.ModelSerializer):
         fields = ['id', 'message', 'order', 'msg_type', 'replied_to', 'created_at']
         read_only_fields = ['id', 'created_at']
 
-    def get_parent(self, obj):
+    def get_replied_to(self, obj):
         if obj.replied_to:
             return ChatSerializer(obj.replied_to).data
         return None

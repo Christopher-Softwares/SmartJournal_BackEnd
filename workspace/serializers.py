@@ -11,7 +11,7 @@ User = get_user_model()
 
 
 class WorkspaceDetailSerializer(serializers.ModelSerializer):
-    members = UserSerializer(many=True)
+    members = UserSerializer(many=True, required=False)
     class Meta:
         model = Workspace
         fields = '__all__'
