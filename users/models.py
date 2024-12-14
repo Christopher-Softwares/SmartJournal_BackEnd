@@ -8,7 +8,13 @@ GENDER_CHOICES = [
 ]
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email,username, password, **other_fields):
+    def deactivate_user(self, user):
+        user.is_active = False
+        user.save()
+
+        return user
+
+    def create_user(self, email, password, **other_fields):
         if not email:
             raise ValueError("Email Address must be provided")
         if not password:
@@ -16,18 +22,17 @@ class CustomUserManager(BaseUserManager):
         
         other_fields.setdefault('is_active', True)
         email = self.normalize_email(email)
-        user = self.model(email=email, username=username, **other_fields)
+        user = self.model(email=email, **other_fields)
         user.set_password(password)
         user.save()        
 
         return user
     
-    def create_superuser(self, email, username, password, **otherfields):
-        otherfields.setdefault('is_active', True)
+    def create_superuser(self, email, password, **otherfields):
         otherfields.setdefault('is_staff', True)
         otherfields.setdefault('is_superuser', True)
 
-        return self.create_user(email, username, password, **otherfields)
+        return self.create_user(email, password, **otherfields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     photo = models.ImageField(upload_to='media/users/%Y/%m/%d')

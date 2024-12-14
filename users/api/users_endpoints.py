@@ -3,45 +3,17 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from users.pagination import MediumPage
-from users.serializer import UserSerializer, UserSignUpSerializer
+from users.serializer import UserSerializer, UserSignUpSerializer, UserPasswordChangeSerializer
 from users.models import CustomUser
 from rest_framework.filters import SearchFilter
-from django.contrib.auth.models import BaseUserManager
+from django.contrib.auth import authenticate
 
-
-class UserManager(BaseUserManager):
-    use_in_migrations = True
-
-    def _create_user(self, email, password, **extra_fields):
-        if not email:
-            raise ValueError('The given email must be set')
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_user(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, password, **extra_fields)
-
-    def create_superuser(self, email, password, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
-
-        return self._create_user(email, password, **extra_fields)
     
 class GetUsersList(generics.ListAPIView):
     """
     List the users with pagination through this API.
     """    
-    queryset = CustomUser.objects.all()
+    queryset = CustomUser.objects.filter(is_active=True)
     permission_classes = [AllowAny]
     pagination_class = MediumPage
     serializer_class = UserSerializer
@@ -69,6 +41,7 @@ class SingUp(generics.CreateAPIView):
         signup_information = request.data
         validated_data = self.serializer_class(data=signup_information)
         if validated_data.is_valid():
+            validated_data.save()
             return Response({"message": "User signed up"}, status=status.HTTP_201_CREATED)
         
         return Response({"message": validated_data.errors,}, status=status.HTTP_400_BAD_REQUEST)
@@ -77,3 +50,28 @@ class UpdataUser(generics.UpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
+class DeleteAccount(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        CustomUser.objects.deactivate_user(user)
+
+        return Response({"message": "User Deleted"})
+
+
+class ChangePassword(APIView):
+    permission_classes=[IsAuthenticated]
+    serializer_class = UserPasswordChangeSerializer
+    def post(self, request):
+        user = user.request
+        password = request["current_password"] 
+        if user == authenticate(request, user, password):
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+                user.set_password(serializer["new_password"])
+                return Response({"message": "password changed succesfuly"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            
+        else:
+            return Response({"message": "Wrong password is provided"}, status=status.HTTP_401_UNAUTHORIZED)
