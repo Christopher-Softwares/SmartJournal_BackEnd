@@ -1,34 +1,55 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from users.models import CustomUser
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from django.contrib.auth.password_validation import validate_password
 
 class UserSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(required=False)
     class Meta:
         model = CustomUser
-        fields = ['id', 'photo', 'bio', 'username', 'first_name', 'last_name', 'created_at', 'gender', 'age', 'country', 'city']
+        fields = ['id', 'photo','email', 'bio', 'first_name', 'last_name', 'created_at', 'gender', 'age', 'country', 'city']
         read_only_fields = ['id']
-        
-class PasswordResetSerializer(serializers.Serializer):
-    old_password = serializers.CharField(write_only=True)
-    new_password = serializers.CharField(write_only=True)
-    new_password_repeat = serializers.CharField(write_only=True)
+
+class UserPasswordChangeSerializer(serializers.Serializer):
+    current_password = serializers.CharField(write_only=True, required=True)
+    new_password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    new_password2 = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['new_password2']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
     
-    def validate(self, data):
-        user = self.context["request"].user
-        
-        if not user.check_password(data['old_password']):
-            raise serializers.ValidationError({"message": "old password is incorrect."})
-        
-        if data["new_password"] != data["new_password_repeat"]:
-            raise serializers.ValidationError({"message": "new_password and new_password_repeat don't match."})
-        
-        return data
-    
-    def save(self):      
-        user = self.context["request"].user
-        user.set_password(self.validated_data["new_password"])
+        return attrs
+
+class UserSignUpSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=CustomUser.objects.all())]
+    )
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password2 = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ('email', 'password', 'password2', 'first_name', 'last_name')
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True}
+        }
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+
+        return attrs
+
+    def create(self, validated_data):
+        user = CustomUser.objects.create(
+            email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name']
+        )
+        user.set_password(validated_data['password'])
         user.save()
+
         return user
