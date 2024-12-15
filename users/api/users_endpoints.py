@@ -3,7 +3,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from users.pagination import MediumPage
-from users.serializer import UserSerializer
+from users.serializer import UserSerializer, PasswordResetSerializer
 from users.models import CustomUser
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -16,6 +16,7 @@ from utils.response_wrapper import (
     standard_response, 
     StandardRetrieveAPIView,
     StandardListAPIView,
+    StandardUpdateAPIView,
     )
 
 class UserManager(BaseUserManager):
@@ -62,6 +63,14 @@ class GetAuthenticatedUser(StandardRetrieveAPIView):
     queryset = CustomUser.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
+    
+    def get_object(self):
+        return self.request.user
+
+
+class PasswordResetAPIView(StandardUpdateAPIView):
+    serializer_class = PasswordResetSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_object(self):
         return self.request.user

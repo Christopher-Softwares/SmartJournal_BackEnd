@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7c1681506ed24a13e9f9652fee402d6eb793da4c64a2e04126bb11dde67b442c"
+            "sha256": "128f3613a17393c1dfaf733a33c680536762cd879e187746fc05730de224a7a5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -88,12 +88,12 @@
         },
         "drf-spectacular": {
             "hashes": [
-                "sha256:a199492f2163c4101055075ebdbb037d59c6e0030692fc83a1a8c0fc65929981",
-                "sha256:b1c04bf8b2fbbeaf6f59414b4ea448c8787aba4d32f76055c3b13335cf7ec37b"
+                "sha256:2c778a47a40ab2f5078a7c42e82baba07397bb35b074ae4680721b2805943061",
+                "sha256:856e7edf1056e49a4245e87a61e8da4baff46c83dbc25be1da2df77f354c7cb4"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.7'",
-            "version": "==0.27.2"
+            "version": "==0.28.0"
         },
         "inflection": {
             "hashes": [
@@ -296,6 +296,15 @@
             "index": "pypi",
             "markers": "python_version >= '3.8'",
             "version": "==0.35.1"
+        },
+        "rest-framework-simplejwt": {
+            "hashes": [
+                "sha256:035187ce5380e18e8b966610a89b6460fb4b73cd179979343888fb190328125d",
+                "sha256:620c56826ff4791c4aaa730ec52aed1f4c74b9c20ea15b9fc1a39bdf99a29a30"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.0'",
+            "version": "==0.0.2"
         },
         "rpds-py": {
             "hashes": [

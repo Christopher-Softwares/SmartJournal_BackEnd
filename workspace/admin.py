@@ -1,6 +1,5 @@
 from django.contrib import admin
-from workspace.models import Workspace, Page
+from workspace.models import Workspace, Folder
 
 admin.site.register(Workspace)
-admin.site.register(Page)
-
+admin.site.register(Folder)

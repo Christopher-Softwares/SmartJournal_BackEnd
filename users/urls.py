@@ -3,5 +3,6 @@ from users.views import *
 
 urlpatterns = [
     path('users/all/', GetUsersListAPIView.as_view(), name='list_users'),
-    path('users/me', GetAuthenticatedUser.as_view(), name="get_authenticated_user")
+    path('me', GetAuthenticatedUser.as_view(), name="get_authenticated_user"),
+    path('reset-password/', PasswordResetAPIView.as_view(), name="user_reset_password")
 ]
