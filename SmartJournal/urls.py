@@ -16,4 +16,5 @@ urlpatterns = [
     path('workspace/', include('workspace.urls')),
     path('note/', include('note.urls')),
     path('chat/', include('chat.urls')),
+    path('plan/', include('plan.urls'))
 ]
