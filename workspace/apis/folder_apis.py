@@ -17,11 +17,17 @@ from rest_framework import status
 
 class CreateFolderAPIView(StandardCreateAPIView):
     serializer_class = CreateFolderSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        workspace_id = serializer.validated_data.get("workspace_id")
+        workspace = Workspace.objects.get(id=workspace_id)
+        
+        self.check_object_permissions(request, workspace)
+
         folder = serializer.save()
         
         return standard_response(
@@ -35,7 +41,7 @@ class CreateFolderAPIView(StandardCreateAPIView):
 
 class UpdateFolderAPIView(StandardUpdateAPIView):
     serializer_class = UpdateFolderSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
     
     def update(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=self.request.data)
@@ -43,8 +49,11 @@ class UpdateFolderAPIView(StandardUpdateAPIView):
         
         folder_id = serializer.validated_data["folder_id"]
         folder = get_object_or_404(Folder, id=folder_id)
+
+        workspace = folder.workspace
+        self.check_object_permissions(request, workspace)
         
-        folder.name = serializer.validated_data["folder_name"]
+        folder.title = serializer.validated_data["folder_name"]
         folder.save()
     
         return standard_response(
@@ -61,12 +70,14 @@ class DeleteFolderAPIView(StandardDestroyAPIView):
     gets folder id and delete it if it's empty
     """
     queryset = Folder.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
     
     def get_object(self):
         folder_id = self.kwargs["pk"]
         
         folder = get_object_or_404(Folder, id=folder_id)
+        
+        self.check_object_permissions(self.request, folder.workspace)
         
         return folder
     
