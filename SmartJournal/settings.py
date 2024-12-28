@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'workspace',
     'chat',
     'note',
+    'plan',
 
     #third-party
     'drf_spectacular',
