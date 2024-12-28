@@ -27,10 +27,12 @@ class GetWorkspaceTagsAPIView(StandardListAPIView):
         workspace_id = self.kwargs.get("workspace_id")
         workspace = get_object_or_404(Workspace, id=workspace_id)
 
-        # Ensure the user is authorized to access the workspace
+        workspace = Workspace.objects.get(id=workspace_id)
+        if not (workspace.owner == self.request.user or workspace.collaborators.filter(id=self.request.user.id).exists()):
+            raise PermissionDenied({"message": "You do not have permission to access this workspace."})
+
         self.check_object_permissions(self.request, workspace)
 
-        # Return tags associated with the workspace
         return workspace.tags.all()
     
     
