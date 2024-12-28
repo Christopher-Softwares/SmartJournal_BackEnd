@@ -21,15 +21,13 @@ class GetWorkspaceTagsAPIView(StandardListAPIView):
     Only accessible to the workspace owner or collaborators.
     """
     serializer_class = TagSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
 
     def get_queryset(self):
         workspace_id = self.kwargs.get("workspace_id")
         workspace = get_object_or_404(Workspace, id=workspace_id)
 
         workspace = Workspace.objects.get(id=workspace_id)
-        if not (workspace.owner == self.request.user or workspace.collaborators.filter(id=self.request.user.id).exists()):
-            raise PermissionDenied({"message": "You do not have permission to access this workspace."})
 
         self.check_object_permissions(self.request, workspace)
 
@@ -42,7 +40,7 @@ class CreateTagAPIView(StandardCreateAPIView):
     Only workspace owners or collaborators can create tags.
     """
     serializer_class = CreateTagSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
 
     def perform_create(self, serializer):
         return serializer.save()
@@ -50,6 +48,11 @@ class CreateTagAPIView(StandardCreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        workspace_id = serializer.validated_data.get("workspace_id")
+        workspace = Workspace.objects.get(id=workspace_id)
+        
+        self.check_object_permissions(request, workspace)
+        
         tag = self.perform_create(serializer)
 
         return standard_response(

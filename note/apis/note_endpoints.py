@@ -126,7 +126,7 @@ class FilterNotesView(generics.GenericAPIView):
         )
         
 class GetNoteContent(StandardRetrieveAPIView):
-    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
+    permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
     serializer_class = NoteContentSerializer
     
     def get_object(self):
