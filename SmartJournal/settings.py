@@ -55,7 +55,9 @@ INSTALLED_APPS = [
     # apps
     'users',
     'workspace',
+    'chat',
     'note',
+    'plan',
 
     #third-party
     'drf_spectacular',
@@ -176,6 +178,24 @@ REST_FRAMEWORK={
     "EXCEPTION_HANDLER": "utils.exception_handler.standard_exception_handler"
 
 }
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        },
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
 
 SPECTACULAR_SETTING = {
 	'TITLE': "",
