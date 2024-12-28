@@ -27,8 +27,6 @@ class GetWorkspaceTagsAPIView(StandardListAPIView):
         workspace_id = self.kwargs.get("workspace_id")
         workspace = get_object_or_404(Workspace, id=workspace_id)
 
-        workspace = Workspace.objects.get(id=workspace_id)
-
         self.check_object_permissions(self.request, workspace)
 
         return workspace.tags.all()
@@ -70,7 +68,7 @@ class DeleteTagAPIView(StandardDestroyAPIView):
     Only the owner of the workspace can delete tags.
     """
     queryset = Tag.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.HasTagInWorkspace]
     serializer_class = TagSerializer
 
     def get_object(self):
@@ -87,7 +85,7 @@ class UpdateTagAPIView(StandardUpdateAPIView):
     """
     queryset = Tag.objects.all()
     serializer_class = UpdateTagSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.HasTagInWorkspace]
 
     def get_object(self):
         tag_id = self.request.data.get("id")
@@ -98,6 +96,9 @@ class UpdateTagAPIView(StandardUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         tag = self.get_object()
+        
+        self.check_object_permissions(self.request, tag)
+        
         if not tag:
             return standard_response(errors={"message": "Tag with the given ID does not exist."},
                             status_code=status.HTTP_404_NOT_FOUND, is_success=False)
@@ -117,12 +118,21 @@ class AttachPageToTagAPIView(GenericAPIView):
     Attach a page to a tag.
     Only authorized users (owner or collaborators) can attach a page to a tag.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace, permissions.HasTagInWorkspace]
     serializer_class = TagAttachDetachSerializer
     
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
+            tag_id = serializer.validated_data.get("tag_id")
+            note_id = serializer.validated_data.get("note_id")
+            
+            note = Note.objects.get(id=note_id)
+            tag = Tag.objects.get(id=tag_id)
+            
+            self.check_object_permissions(request, note)
+            self.check_object_permissions(request, tag)
+            
             serializer.attach_tag_to_note()
             return standard_response(data={"message": "Tag attached successfully."}, status_code=status.HTTP_200_OK)
         return standard_response(errors=serializer.errors, is_success=False, status_code=status.HTTP_400_BAD_REQUEST)
@@ -133,12 +143,22 @@ class DetachPageFromTagAPIView(GenericAPIView):
     Detach a page from a tag.
     Only authorized users (owner or collaborators) can detach a page from a tag.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace, permissions.HasTagInWorkspace]
     serializer_class = TagAttachDetachSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
+
+            tag_id = serializer.validated_data.get("tag_id")
+            note_id = serializer.validated_data.get("note_id")
+            
+            note = Note.objects.get(id=note_id)
+            tag = Tag.objects.get(id=tag_id)
+            
+            self.check_object_permissions(request, note)
+            self.check_object_permissions(request, tag)
+
             serializer.detach_tag_from_note()
             return standard_response(data={"message": "Tag detached successfully."}, status_code=status.HTTP_200_OK)
         return standard_response(errors=serializer.errors, is_success=False, status_code=status.HTTP_400_BAD_REQUEST)

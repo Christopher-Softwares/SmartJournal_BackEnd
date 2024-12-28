@@ -19,3 +19,15 @@ class HasNoteInWorkspace(BasePermission):
             workspace.owner == request.user or 
             workspace.members.filter(id=request.user.id).exists()
         )
+        
+
+class HasTagInWorkspace(BasePermission):
+    
+    def has_object_permission(self, request, view, obj):
+        #obj is tag
+        workspace = obj.workspace
+
+        return (
+            workspace.owner == request.user or 
+            workspace.members.filter(id=request.user.id).exists()
+        )
