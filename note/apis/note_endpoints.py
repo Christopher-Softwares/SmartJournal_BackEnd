@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 
 class CreateNoteAPIView(StandardCreateAPIView):
     serializer_class = AddNoteSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
     
     def perform_create(self, serializer):
         return serializer.save()
@@ -23,6 +23,12 @@ class CreateNoteAPIView(StandardCreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        
+        workspace_id = serializer.validated_data.get("workspace_id")
+        workspace = Workspace.objects.get(id=workspace_id)
+        
+        self.check_object_permissions(request, workspace)
+        
         note = self.perform_create(serializer)
 
         return standard_response(
@@ -35,7 +41,7 @@ class CreateNoteAPIView(StandardCreateAPIView):
 
 class SaveNoteContentAPIView(StandardUpdateAPIView):
     serializer_class = SaveNoteContentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
     
     def get_object(self):
         note_id = self.request.data.get("note_id")
@@ -46,6 +52,9 @@ class SaveNoteContentAPIView(StandardUpdateAPIView):
         
     def update(self, request, *args, **kwargs):
         note = self.get_object()
+        
+        self.check_object_permissions(request, note)
+        
         if not note:
             return standard_response(
                 errors = {"message": "Note with the given ID does not exist."},
@@ -63,7 +72,7 @@ class SaveNoteContentAPIView(StandardUpdateAPIView):
 
 
 class FilterNotesView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
     serializer_class = NotesFilterSerializer
     
     def post(self, request, *args, **kwargs):
@@ -75,6 +84,9 @@ class FilterNotesView(generics.GenericAPIView):
         tags = serializer.validated_data.get("tags", [])
         
         workspace = Workspace.objects.get(id=workspace_id)
+        
+        # check workspace permission
+        self.check_object_permissions(request, workspace)
         
         notes_query = Note.objects.filter(workspace=workspace)
         
@@ -125,6 +137,7 @@ class FilterNotesView(generics.GenericAPIView):
             status_code=status.HTTP_200_OK,
         )
         
+
 class GetNoteContent(StandardRetrieveAPIView):
     permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
     serializer_class = NoteContentSerializer
