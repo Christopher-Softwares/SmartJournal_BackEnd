@@ -21,6 +21,9 @@ class CreateNoteAPIView(StandardCreateAPIView):
         return serializer.save()
     
     def create(self, request, *args, **kwargs):
+        workspace_id = request.data.get("workspace_id")
+        workspace = Workspace.objects.filter(id=workspace_id)
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
