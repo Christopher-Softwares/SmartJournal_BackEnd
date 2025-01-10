@@ -10,13 +10,24 @@ from chat.models import Chat
 class ListWorkspaceChats(ListAPIView):
     serializer_class = ChatSerializer
     permission_classes = [IsAuthenticated]
-    def get(self, request, id):
-        workspace = Workspace.objects.filter(id=id)
-        if workspace:
-            serializer  = self.serializer_class(workspace.chats.all(), many=True)
-            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
-        return Response({"message": "Workspace with this id does not exists"}, status=status.HTTP_404_NOT_FOUND)
+    def get_queryset(self):
+        workspace_id = self.kwargs.get('workspace_id')
+        try:
+            workspace = Workspace.objects.get(id=workspace_id)
+        except Workspace.DoesNotExist:
+            return None  # No queryset if the workspace doesn't exist
+        return workspace.chats.all()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        if queryset is None:
+            return Response(
+                {"message": "Workspace with this id does not exist."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = self.serializer_class(queryset, many=True)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
     
 class NewPrompt(APIView):
     serializer_class = PromptSerializer
@@ -35,7 +46,7 @@ class NewPrompt(APIView):
                 workspace=workspace,
                 message=serializer.validated_data['prompt'],
                 order=last_order + 1,
-                message_type="client", 
+                msg_type="client", 
             )
 
             reply_chat = Chat.objects.create(
@@ -43,7 +54,7 @@ class NewPrompt(APIView):
                 message=f"Reply to: {prompt_chat.message}",
                 order=prompt_chat.order + 1,
                 replied_to=prompt_chat,
-                message_type="server"
+                msg_type="server"
                 )
 
             response_data = ChatSerializer(reply_chat).data

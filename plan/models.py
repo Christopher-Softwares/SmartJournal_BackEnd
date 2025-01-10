@@ -19,6 +19,7 @@ class Plan(models.Model):
     max_notes_count = models.IntegerField(null=True)
     max_collaborator_count = models.IntegerField(null=True)
 
+
     def __str__(self):
         return self.name
 
@@ -67,3 +68,4 @@ class UserPlan(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} - {self.plan.name}"
+

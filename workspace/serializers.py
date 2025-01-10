@@ -7,10 +7,12 @@ from rest_framework import serializers
 from .models import Workspace
 from django.contrib.auth import get_user_model
 
+
 User = get_user_model()
 
 class WorkspaceSerializer(serializers.ModelSerializer):
     members = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), many=True)
+
     class Meta:
         model = Workspace
         fields = '__all__'

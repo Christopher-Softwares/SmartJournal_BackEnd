@@ -56,5 +56,5 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
 
     def __str__(self) -> str:
-        return self.email    
+        return self.email
     

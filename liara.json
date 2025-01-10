@@ -6,5 +6,11 @@
     "compileMessages": false,
     "modifySettings": true,
     "geospatial": false
-  }
+  },
+  "disks":[
+    {
+      "name": "christopher-smart-journal-disk",
+      "mountTo": "media"
+    }
+  ]
 }
