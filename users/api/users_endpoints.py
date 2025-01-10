@@ -73,7 +73,8 @@ class SingUp(generics.CreateAPIView):
 class UpdataUser(generics.UpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
-    queryset = CustomUser.objects.filter(is_active=True)
+    email = request.user.email
+    queryset = CustomUser.objects.filter(email = email)
 
 class DeleteAccount(APIView):
     permission_classes=[IsAuthenticated]
