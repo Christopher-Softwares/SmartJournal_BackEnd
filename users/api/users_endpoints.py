@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from users.pagination import MediumPage
 from users.serializer import UserSerializer, UserSignUpSerializer, UserPasswordChangeSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
 from users.models import CustomUser
 from rest_framework.filters import SearchFilter
 from django.contrib.auth import authenticate
@@ -74,6 +75,8 @@ class UpdataUser(generics.UpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     queryset = CustomUser.objects.all()
+    parser_classes = [MultiPartParser, FormParser]
+    lookup_field = 'id'
 
 class DeleteAccount(APIView):
     permission_classes=[IsAuthenticated]

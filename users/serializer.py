@@ -8,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['id', 'photo','email', 'bio', 'first_name', 'last_name', 'created_at', 'gender', 'age', 'country', 'city']
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'email']
 
 class UserPasswordChangeSerializer(serializers.Serializer):
     current_password = serializers.CharField(write_only=True, required=True)
