@@ -9,12 +9,26 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-
-class WorkspaceDetailSerializer(serializers.ModelSerializer):
-    members = UserSerializer(many=True)
+class WorkspaceSerializer(serializers.ModelSerializer):
+    members = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), many=True)
     class Meta:
         model = Workspace
         fields = '__all__'
+        read_only_fields = ["created_at", "updated_at", "last_active"]
+    
+    def validate(self, attrs):
+        request = self.context.get("request")
+        user_plan = getattr(request.user, 'user_plan', None)
+        if not user_plan:
+            raise serializers.ValidationError(
+                {"message": "User does not have default plan"}
+            )
+        if not user_plan.can_add_workspace():
+            raise serializers.ValidationError(
+                {"message": "Exceeded workspace count limit for your plan"}
+            )
+    
+        return attrs
 
 class AddMembersSerializer(serializers.Serializer):
     member_ids = serializers.ListField(
@@ -24,7 +38,6 @@ class AddMembersSerializer(serializers.Serializer):
     )
 
     def validate_member_ids(self, value):
-        # Ensure all users exist
         existing_users = User.objects.filter(id__in=value)
         if len(existing_users) != len(value):
             invalid_ids = set(value) - set(existing_users.values_list('id', flat=True))
@@ -39,12 +52,10 @@ class RemoveMemberSerializer(serializers.Serializer):
     )
 
     def validate(self, data):
-        # Ensure the workspace exists in the context
         workspace = self.context.get('workspace')
         if not workspace:
             raise serializers.ValidationError("Workspace is required for member removal.")
-
-        # Check if all members exist in the workspace
+        
         invalid_members = [
             member_id for member_id in data['member_ids']
             if not workspace.members.filter(id=member_id).exists()
@@ -55,8 +66,6 @@ class RemoveMemberSerializer(serializers.Serializer):
                 {"member_ids": f"Users with IDs {invalid_members} are not members of this workspace."}
             )
         return data
-
-
 
 
 class CreateFolderSerializer(serializers.ModelSerializer):

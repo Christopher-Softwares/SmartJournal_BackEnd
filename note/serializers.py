@@ -4,7 +4,6 @@ from .models import Note, Tag
 
 
 class TagSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = Tag
         fields = ['id', 'name', 'description']
@@ -110,9 +109,14 @@ class AddNoteSerializer(serializers.Serializer):
     
     def validate(self, data):
         workspace_id = data.get("workspace_id")
+        user = self.context["request"].user
+        plan = user.plan
+        if not plan.can_add_note(Workspace.objects.filter(id=workspace_id)):
+            raise serializers.ValidationError({"message": "Exceeded note count limitation"})
+
         if workspace_id is None:
             raise serializers.ValidationError({"message": "workspace_id is required."})
-        
+
         if not Workspace.objects.filter(id=workspace_id).exists():
             raise serializers.ValidationError({"message": "didn't find workspace."})
         
