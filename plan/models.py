@@ -1,6 +1,7 @@
 from django.db import models
+from django.utils import timezone
 from users.models import CustomUser
-from datetime import datetime
+
 
 class UserBalance(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="balance")
@@ -14,10 +15,10 @@ class Plan(models.Model):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     ai_access = models.BooleanField(default=False)
-    duration = models.DurationField(null=True)
-    max_workspaces_count = models.IntegerField(null=True)
-    max_notes_count = models.IntegerField(null=True)
-    max_collaborator_count = models.IntegerField(null=True)
+    duration = models.DurationField(null=True, blank=True)
+    max_workspaces_count = models.IntegerField(null=True, blank=True)
+    max_notes_count = models.IntegerField(null=True, blank=True)
+    max_collaborator_count = models.IntegerField(null=True, blank=True)
 
 
     def __str__(self):
@@ -33,11 +34,11 @@ class UserPlan(models.Model):
     @property
     def is_expired(self):
         if self.plan.name == "free plan":
-            return None
-        expiration_date = self.start_date + self.plan.duration 
-        if expiration_date > datetime.now():
-            return True
-        return False
+            return False
+        expiration_date = self.start_date + self.plan.duration
+        if expiration_date > timezone.now():
+            return False
+        return True
         
     @property
     def expiration_time(self):
@@ -52,16 +53,14 @@ class UserPlan(models.Model):
             return True
         return False
 
-    @property
     def can_add_note(self, workspace):
         note_left = self.plan.max_notes_count - workspace.notes.count()
         if note_left > 0:
             return True
         return False
     
-    @property
     def can_add_member(self, workspace, n):
-        memeber_left = self.plan.max_collaborator_count - workspace.memebers.count() - n
+        memeber_left = self.plan.max_collaborator_count - workspace.members.count() - n
         if memeber_left > 0:
             return True
         return False

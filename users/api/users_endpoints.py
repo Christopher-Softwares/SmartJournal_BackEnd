@@ -45,27 +45,6 @@ class SingUp(generics.CreateAPIView):
         validated_data = self.serializer_class(data=signup_information)
         if validated_data.is_valid():
             user_object = validated_data.save()
-
-            # assign default plan
-            # get or create default plan
-            default_plan = Plan.objects.get_or_create(
-                is_default=True,
-                defaults={
-                    "name": "Free Plan",
-                    "description": "Default free plan for all users.",
-                    "price": 0.0,
-                    "is_default": True,
-                }
-            )
-
-            # create user plan
-            UserPlan.objects.create(
-                user=user_object,
-                plan=default_plan[0],
-                is_active=True,
-                start_date=now(),
-            )
-            
             
             return Response({"message": "User signed up"}, status=status.HTTP_201_CREATED)
         
