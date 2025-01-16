@@ -49,8 +49,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
 
+    #signals
+    'users.apps.UsersConfig',
+
     # apps
-    'users',
     'workspace',
     'chat',
     'note',
@@ -71,8 +73,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
     'corsheaders.middleware.CorsMiddleware',
+
+    #custom middlewares
+    'users.middleware.CheckPlanExpiration'
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
