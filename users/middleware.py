@@ -1,13 +1,17 @@
 from django.http import JsonResponse
 from rest_framework import status
 from plan.models import Plan, UserPlan
-
+from django.utils.functional import SimpleLazyObject
+from django.contrib.auth.models import AnonymousUser
 
 class CheckPlanExpiration:
     def __init__(self, get_response):
         self.get_response = get_response
     
     def __call__(self, request):
+        if isinstance(request.user, AnonymousUser) or isinstance(request.user, SimpleLazyObject):
+            return self.get_response(request)
+
         user = request.user
         plan = getattr(user, 'user_plan', None)               
         backup_plan = Plan.objects.get(name="free plan")
