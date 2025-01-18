@@ -7,56 +7,65 @@ from rest_framework import serializers
 from .models import Workspace
 from django.contrib.auth import get_user_model
 
+
 User = get_user_model()
 
-
-class WorkspaceDetailSerializer(serializers.ModelSerializer):
-    members = UserSerializer(many=True, required=False)
+class WorkspaceSerializer(serializers.ModelSerializer):
+    members = serializers.SlugRelatedField(queryset=User.objects.all(), many=True, slug_field='email')
     class Meta:
         model = Workspace
         fields = '__all__'
+        read_only_fields = ["created_at", "updated_at", "last_active"]
+
+    def validate(self, attrs):
+        request = self.context.get("request")
+        user_plan = getattr(request.user, 'user_plan', None)
+        
+        if not user_plan:
+            raise serializers.ValidationError(
+                {"message": "User does not have a default plan"}
+            )
+        
+        if not user_plan.can_add_workspace:
+            raise serializers.ValidationError(
+                {"message": "Exceeded workspace count limit for your plan"}
+            )
+    
+        return attrs
 
 class AddMembersSerializer(serializers.Serializer):
-    member_ids = serializers.ListField(
-        child=serializers.IntegerField(),
+    member_emails = serializers.ListField(
+        child=serializers.EmailField(),
         write_only=True,
-        help_text="List of user IDs to add to the workspace."
+        help_text="List of user emails to add to the workspace."
     )
 
-    def validate_member_ids(self, value):
-        # Ensure all users exist
-        existing_users = User.objects.filter(id__in=value)
+    def validate_member_emails(self, value):
+        existing_users = User.objects.filter(email__in=value)
         if len(existing_users) != len(value):
-            invalid_ids = set(value) - set(existing_users.values_list('id', flat=True))
-            raise serializers.ValidationError(f"Invalid user IDs: {list(invalid_ids)}")
+            invalid_emails = set(value) - set(existing_users.values_list('id', flat=True))
+            raise serializers.ValidationError(f"Invalid user emails: {list(invalid_emails)}")
         return value
 
 class RemoveMemberSerializer(serializers.Serializer):
-    member_ids = serializers.ListField(
-        child=serializers.IntegerField(),
-        write_only=True,
-        help_text="List of user IDs to remove from the workspace."
-    )
+    member_emails = serializers.SlugRelatedField(queryset=User.objects.all(), many=True, slug_field='email')
 
     def validate(self, data):
-        # Ensure the workspace exists in the context
         workspace = self.context.get('workspace')
         if not workspace:
             raise serializers.ValidationError("Workspace is required for member removal.")
-
-        # Check if all members exist in the workspace
+        
         invalid_members = [
-            member_id for member_id in data['member_ids']
-            if not workspace.members.filter(id=member_id).exists()
+            member_email for member_email in data['member_emails']
+            if not workspace.members.filter(email=member_email).exists()
         ]
+        print(invalid_members)
 
         if invalid_members:
             raise serializers.ValidationError(
-                {"member_ids": f"Users with IDs {invalid_members} are not members of this workspace."}
+                {"member_emails": f"Users with emails {invalid_members} are not members of this workspace."}
             )
         return data
-
-
 
 
 class CreateFolderSerializer(serializers.ModelSerializer):
