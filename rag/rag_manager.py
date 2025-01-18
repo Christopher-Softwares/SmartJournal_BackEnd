@@ -1,5 +1,5 @@
-from rag_settings import RagSettings
-from chroma.chroma_connection import ChromaDBConnectionFactory
+from rag.rag_settings import RagSettings
+from rag.chroma.chroma_connection import ChromaDBConnectionFactory
 
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings

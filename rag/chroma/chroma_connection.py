@@ -1,5 +1,5 @@
 import chromadb
-from chroma.chroma_settings import ChromaDBConnectionSettings
+from rag.chroma.chroma_settings import ChromaDBConnectionSettings
 from chromadb.config import Settings
 
 class ChromaDBConnectionFactory:

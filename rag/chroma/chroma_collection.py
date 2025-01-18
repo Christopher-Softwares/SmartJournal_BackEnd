@@ -1,4 +1,4 @@
-from chroma.chroma_connection import ChromaDBConnectionFactory
+from rag.chroma.chroma_connection import ChromaDBConnectionFactory
 import chromadb
 import random
 import string
