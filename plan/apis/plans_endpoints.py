@@ -3,7 +3,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from plan.models import UserPlan, Plan
-from plan.serializers import AssignPlanSerializer, UserPlanSerializer
+from plan.serializers import AssignPlanSerializer, UserPlanSerializer, BalanceSerializer
+from plan.models import UserBalance
+from django.shortcuts import get_object_or_404
 
 
 class AssignPlanView(APIView):
@@ -41,3 +43,13 @@ class UserPlansView(APIView):
         user_plans = UserPlan.objects.filter(user=request.user, is_active=True)
         serializer = self.serializer_class(user_plans, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class GetUserBalanceView(APIView):
+    serializer_class = BalanceSerializer
+    authentication_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        balance = get_object_or_404(UserBalance, user=user)
+        serializer = self.serializer_class(instance=balance)
+        
+        return Response(data=serializer.data, status=status.HTTP_200_OK)

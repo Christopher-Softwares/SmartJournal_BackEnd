@@ -50,9 +50,10 @@ INSTALLED_APPS = [
     'rest_framework',
 
     #signals
-    'users.apps.UsersConfig',
+    # 'users.apps.UsersConfig',
 
     # apps
+    'users',
     'workspace',
     'chat',
     'note',
