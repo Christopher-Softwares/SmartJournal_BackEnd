@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from plan.models import Plan, UserPlan
+from plan.models import Plan, UserPlan, UserBalance
 from rest_framework.validators import UniqueValidator
 
 
@@ -8,9 +8,6 @@ class AssignPlanSerializer(serializers.Serializer):
 
     def validate_plan_id(self, value):
         user = self.context["request"].user
-
-        if UserPlan.objects.filter(user=user).exists():
-            raise serializers.ValidationError("User already has a plan.")
         
         if not Plan.objects.filter(id=value).exists():
             raise serializers.ValidationError("Invalid plan ID.")
@@ -23,4 +20,8 @@ class UserPlanSerializer(serializers.ModelSerializer):
         model = UserPlan
         fields = ["plan", "is_active", "start_date"]
 
- 
+class BalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserBalance
+        read_only_fields = ["updated_at"]
+        fields = "__all__"
