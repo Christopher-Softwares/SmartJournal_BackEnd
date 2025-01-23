@@ -8,9 +8,6 @@ class AssignPlanSerializer(serializers.Serializer):
 
     def validate_plan_id(self, value):
         user = self.context["request"].user
-
-        if UserPlan.objects.filter(user=user).exists() and UserPlan.objects.filter(user=user).name != "free plan":
-            raise serializers.ValidationError("User already has a plan.")
         
         if not Plan.objects.filter(id=value).exists():
             raise serializers.ValidationError("Invalid plan ID.")

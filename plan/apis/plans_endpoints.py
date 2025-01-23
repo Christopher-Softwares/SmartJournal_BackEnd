@@ -18,22 +18,25 @@ class AssignPlanView(APIView):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
             plan_id = serializer.validated_data["plan_id"]
-            plan = Plan.objects.get(id=plan_id)
+            new_plan = Plan.objects.get(id=plan_id)
             user = request.user
 
             if not getattr(user,"balance", None):
-                return Response({"message": "User does not have balance relation, handle later with signal"})
+                return Response({"message": "User does not have balance."})
             
             balance = getattr(user, "balance", None)
-            if balance.balance  < plan.price:
+            if balance.balance  < new_plan.price:
                 return Response({"message": "Insufficient balance."}, status=status.HTTP_400_BAD_REQUEST)
             
-            UserPlan.objects.create(user=user, plan=plan)
+            if UserPlan.objects.filter(user=user).exists():
+                UserPlan.objects.filter(user=user).delete()
+            
+            UserPlan.objects.create(user=user, plan=new_plan)
 
-            balance.balance -= plan.price
+            balance.balance -= new_plan.price
             balance.save()
 
-            return Response({"message": f"Plan '{plan.name}' assigned successfully!"}, status=status.HTTP_200_OK)
+            return Response({"message": f"Plan '{new_plan.name}' assigned successfully!"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserPlansView(APIView):
