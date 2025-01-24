@@ -16,7 +16,7 @@ class ListWorkspaceChats(ListAPIView):
         try:
             workspace = Workspace.objects.get(id=workspace_id)
         except Workspace.DoesNotExist:
-            return None  # No queryset if the workspace doesn't exist
+            return None  
         return workspace.chats.all()
 
     def list(self, request, *args, **kwargs):
