@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 
 class CreateNoteAPIView(StandardCreateAPIView):
     serializer_class = AddNoteSerializer
-    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
+    # permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
     
     def perform_create(self, serializer):
         return serializer.save()
@@ -44,7 +44,7 @@ class CreateNoteAPIView(StandardCreateAPIView):
 
 class SaveNoteContentAPIView(StandardUpdateAPIView):
     serializer_class = SaveNoteContentSerializer
-    permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
+    # permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
     
     def get_object(self):
         note_id = self.request.data.get("note_id")
@@ -75,7 +75,7 @@ class SaveNoteContentAPIView(StandardUpdateAPIView):
 
 
 class FilterNotesView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
+    # permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
     serializer_class = NotesFilterSerializer
     
     def post(self, request, *args, **kwargs):
@@ -142,7 +142,7 @@ class FilterNotesView(generics.GenericAPIView):
         
 
 class GetNoteContent(StandardRetrieveAPIView):
-    permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
+    # permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
     serializer_class = NoteContentSerializer
     
     def get_object(self):
