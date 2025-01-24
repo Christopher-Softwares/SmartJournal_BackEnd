@@ -16,17 +16,15 @@ class ChatAPITests(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         self.other_user = User.objects.create_user(email="otheruser@example.com", password="password123")
-
         self.workspace = Workspace.objects.create(name="Test Workspace", owner=self.user)
-
         self.chat1 = Chat.objects.create(workspace=self.workspace, message="Hello", order=1, msg_type="client")
         self.chat2 = Chat.objects.create(workspace=self.workspace, message="Reply to Hello", order=2, msg_type="server", replied_to=self.chat1)
 
     def test_list_workspace_chats_success(self):
-        response = self.client.get(f"/<int:workspace_id>/messages/")
+        response = self.client.get(f"/1/messages/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['data']), 2)
-        self.assertEqual(response.data['data'][0]['message'], "Hello")
+        self.assertEqual(len(response['data']), 2)
+        self.assertEqual(response['data'][0]['message'], "Hello")
 
     def test_list_workspace_chats_non_existent_workspace(self):
         response = self.client.get("/999/messages/")

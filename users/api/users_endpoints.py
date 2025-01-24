@@ -55,7 +55,7 @@ class UpdataUser(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = CustomUser.objects.all()
     parser_classes = [MultiPartParser, FormParser]
-    lookup_field = 'id'
+    lookup_field = 'email'
 
 class DeleteAccount(APIView):
     permission_classes=[IsAuthenticated]
