@@ -7,7 +7,7 @@ from utils.response_wrapper import (
 ) 
 from django.shortcuts import get_object_or_404
 from workspace.models import Workspace, Folder
-from workspace.serializers import CreateFolderSerializer, UpdateFolderSerializer
+from workspace.serializers import CreateFolderSerializer, UpdateFolderSerializer, FolderSerializer
 from workspace import permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
@@ -70,6 +70,7 @@ class DeleteFolderAPIView(StandardDestroyAPIView):
     gets folder id and delete it if it's empty
     """
     queryset = Folder.objects.all()
+    serializer_class = FolderSerializer
     permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
     
     def get_object(self):

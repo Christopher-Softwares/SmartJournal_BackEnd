@@ -68,6 +68,12 @@ class RemoveMemberSerializer(serializers.Serializer):
         return data
 
 
+class FolderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Folder
+        fields = ['id', 'title']
+
+
 class CreateFolderSerializer(serializers.ModelSerializer):
     
     workspace_id = serializers.IntegerField(write_only=True)

@@ -14,6 +14,7 @@ from .views import (
     AttachPageToTagAPIView,
     DetachPageFromTagAPIView,
     GetWorkspaceTagsAPIView,
+    GetNoteTagsAPIView,
 )
 
 urlpatterns = [
@@ -29,4 +30,5 @@ urlpatterns = [
     path('add_tag_to_note/', AttachPageToTagAPIView.as_view(), name='attach-note-to-tag'),
     path('remove_tag_from_note/', DetachPageFromTagAPIView.as_view(), name='detach-note-from-tag'),
     path('get_workspace_tags/<int:workspace_id>/', GetWorkspaceTagsAPIView.as_view(), name='get-workspace-tags'),
+    path('get_note_tags/<int:note_id>/', GetNoteTagsAPIView.as_view(), name='get-note-tags'),
 ]
