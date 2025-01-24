@@ -31,6 +31,21 @@ class GetWorkspaceTagsAPIView(StandardListAPIView):
 
         return workspace.tags.all()
     
+
+class GetNoteTagsAPIView(StandardListAPIView):
+    serializer_class = TagSerializer
+    permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
+    
+    def get_queryset(self):
+        note_id = self.kwargs.get("note_id")
+        note = get_object_or_404(Note, id=note_id)
+        
+        self.check_object_permissions(self.request, note)
+
+        note_tags = Tag.objects.filter(notes__id=note_id)
+        
+        return note_tags
+
     
 class CreateTagAPIView(StandardCreateAPIView):
     """
