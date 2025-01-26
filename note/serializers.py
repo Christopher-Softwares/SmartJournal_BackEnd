@@ -110,7 +110,7 @@ class AddNoteSerializer(serializers.Serializer):
     def validate(self, data):
         workspace_id = data.get("workspace_id")
         user = self.context["request"].user
-        plan = user.plan
+        plan = user.user_plan
         
         try:
             workspace = Workspace.objects.get(id=workspace_id)
