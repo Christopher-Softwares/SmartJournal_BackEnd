@@ -11,6 +11,10 @@ from note.models import Note
 from note import permissions
 from workspace.models import Workspace, Folder
 from django.shortcuts import get_object_or_404
+from rag.chroma.chroma_collection import *
+from rag.chroma.chroma_settings import ChromaDBConnectionSettings
+from rag.rag_manager import RagManager
+from rag.rag_settings import RagSettings
 
 
 class CreateNoteAPIView(StandardCreateAPIView):
@@ -68,6 +72,20 @@ class SaveNoteContentAPIView(StandardUpdateAPIView):
         serializer = self.get_serializer(note, data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+
+
+        chroma_settings = ChromaDBConnectionSettings(True, "https://christopher-smart-journal-chroma.liara.run/", 8000, "./chroma_db")
+        rag_settings = RagSettings(
+            openai_api_key = "***", 
+            chunk_size = 400)
+
+        connection_factory = ChromaDBConnectionFactory(settings= chroma_settings)
+
+        collectionManager = ChromaCollectionManager(connection_factory)
+        ragManager = RagManager(connection_factory, rag_settings)
+
+        ragManager.add_new_content(note, collection_name = "test3")
+
         return standard_response(
             data={"message": "Note content updated successfully."},
             status_code=status.HTTP_200_OK,
