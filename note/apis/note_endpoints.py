@@ -120,6 +120,14 @@ class FilterNotesView(generics.GenericAPIView):
                             } for note in folder_notes]
                     }
                 )
+            else:
+                folders.append(
+                    {
+                        "folder_id": folder.id,
+                        "title": folder.title,
+                        "notes": []
+                    }
+                )
         
         notes = [{
             "note_id": note.id,
