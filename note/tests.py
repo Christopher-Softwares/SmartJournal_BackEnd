@@ -497,3 +497,45 @@ class TagEndpointsTests(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         
+
+    def test_get_workspace_tags_valid(self):
+        self.client.force_authenticate(user=self.user)
+        valid_url = reverse("get-workspace-tags", kwargs={"workspace_id": self.workspace.id})
+
+        response = self.client.get(valid_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        self.assertEqual(response.json()["data"][0]["id"], self.tag1.id)
+        
+        
+    def test_get_workspace_tags_forbidden(self):
+        self.client.force_authenticate(user=self.user)
+        forbidden_url = reverse("get-workspace-tags", kwargs={"workspace_id": self.workspace2.id})
+
+        response = self.client.get(forbidden_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        
+    def test_get_note_tags_valid(self):
+        self.client.force_authenticate(user=self.user)
+        valid_url = reverse("get-note-tags", kwargs={"note_id": self.note1.id})
+
+        self.tag1.notes.add(self.note1)
+
+        response = self.client.get(valid_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        self.assertEqual(response.json()["data"][0]["id"], self.tag1.id)
+    
+    def test_get_note_tags_forbidden(self):
+        self.client.force_authenticate(user=self.user)
+        forbidden_url = reverse("get-note-tags", kwargs={"note_id": self.note2.id})
+
+        self.tag2.notes.add(self.note2)
+
+        response = self.client.get(forbidden_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
