@@ -6,6 +6,7 @@ from .views import (
     SaveNoteContentAPIView,
     FilterNotesView,
     GetNoteContent,
+    DeleteNoteView,
 
     # tag apis
     CreateTagAPIView,
@@ -22,6 +23,7 @@ urlpatterns = [
     path("save_note/", SaveNoteContentAPIView.as_view(), name="save-note"),
     path("get_user_notes/", FilterNotesView.as_view(), name="filter-notes"),
     path("<int:note_id>/", GetNoteContent.as_view(), name="get-note-content"),
+    path("delete/<int:pk>/", DeleteNoteView.as_view(), name="delete-note"),
 
     # tag attach and detach
     path('tags/create/', CreateTagAPIView.as_view(), name='create-tag'),

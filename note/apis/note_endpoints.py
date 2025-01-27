@@ -3,6 +3,7 @@ from utils.response_wrapper import (
     StandardCreateAPIView,
     StandardUpdateAPIView,
     StandardRetrieveAPIView,
+    StandardDestroyAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, generics
@@ -161,3 +162,16 @@ class GetNoteContent(StandardRetrieveAPIView):
 
         return note    
     
+
+
+class DeleteNoteView(StandardDestroyAPIView):
+    
+    queryset = Note.objects.all()
+    permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
+    serializer_class = NoteContentSerializer
+
+    def get_object(self):
+        note = super().get_object()
+        workspace = note.workspace
+
+        return note 

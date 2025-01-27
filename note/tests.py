@@ -296,6 +296,76 @@ class GetNoteContentTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         
 
+class DeleteNoteTests(APITestCase):
+
+    def setUp(self):
+
+        self.plan = Plan.objects.create(
+            name="free plan", 
+            price=0, 
+            ai_access=True, 
+            duration=dt.timedelta(days=100), 
+            max_workspaces_count=20, 
+            max_notes_count=100, 
+            max_collaborator_count=100
+        )
+
+        self.user = CustomUser.objects.create_user(email="testuser@test.com", password="aA!12345678")
+        self.user2 = CustomUser.objects.create_user(email="testuser2@test.com", password="aA!12345678")
+        
+        self.workspace = Workspace.objects.create(
+            name="Test Workspace",
+            description="A workspace for testing",
+            owner=self.user,
+        )
+        
+        self.workspace2 = Workspace.objects.create(
+            name="Test Workspace 2",
+            description="A workspace for testing",
+            owner=self.user2,
+        )
+
+        self.client = APIClient()
+        
+        self.note1 = Note.objects.create(
+            workspace=self.workspace,
+            title="test note",
+            description="test desc",
+        )
+
+        self.note2 = Note.objects.create(
+            workspace=self.workspace2,
+            title="test note",
+            description="test desc",
+        )
+        
+        
+    def test_delete_note_valid(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse('delete-note', kwargs={"pk": self.note1.id})
+        
+        response = self.client.delete(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
+    
+    def test_delete_note_forbidden(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse('delete-note', kwargs={"pk": self.note2.id})
+        
+        response = self.client.delete(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+    
+    def test_delete_note_not_found(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse('delete-note', kwargs={"pk": self.note1.id + 100})
+        
+        response = self.client.delete(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        
 
 class TagEndpointsTests(APITestCase):
     
