@@ -1,7 +1,8 @@
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from workspace.models import Workspace
+from django.urls import reverse
+from workspace.models import Workspace, Folder
 from plan.models import Plan
 from users.models import CustomUser
 
@@ -82,3 +83,153 @@ class WorkspaceViewSetTests(APITestCase):
         self.assertEqual(response2.status_code, status.HTTP_201_CREATED)               
         self.assertEqual(response3.status_code, status.HTTP_201_CREATED)               
         self.assertEqual(response4.status_code, status.HTTP_400_BAD_REQUEST)               
+
+    
+
+class FolderViewsTests(APITestCase):
+    
+    def setUp(self):
+        self.client = APIClient()
+        
+        self.plan = Plan.objects.create(name="free plan", price=0, ai_access=True, duration=None, max_notes_count=100, max_collaborator_count=100, max_workspaces_count=100)
+        
+        self.user = User.objects.create(email="testuser@test.com", password="aA!123456789")
+        self.user2 = User.objects.create(email="testuser2@test.com", password="aA!123456789")
+        
+        self.workspace1 = Workspace.objects.create(
+            name="test workspace",
+            description="test desc",
+            owner=self.user,
+        )
+        
+        self.workspace2 = Workspace.objects.create(
+            name="test workspace 2",
+            description="test desc 2",
+            owner=self.user2,
+        )
+        
+        self.folder1 = Folder.objects.create(title="test folder", workspace=self.workspace1)
+        self.folder2 = Folder.objects.create(title="test folder 2", workspace=self.workspace2)
+        
+    
+    def test_create_folder_valid(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("create-folder")
+        
+        valid_data = {
+            "folder_name": "new folder",
+            "workspace_id": self.workspace1.id,
+        }
+        
+        response = self.client.post(url, valid_data)
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+    
+    def test_create_folder_forbidden(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("create-folder")
+        
+        forbidden_data = {
+            "folder_name": "new folder",
+            "workspace_id": self.workspace2.id,
+        }
+        
+        response = self.client.post(url, forbidden_data)
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+    
+    def test_create_folder_invalid(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("create-folder")
+        
+        invalid_data1 = {
+            "name": "folder name",
+            "workspace_id": self.workspace1.id,
+        }
+        
+        invalid_data2 = {
+            "folder_name": "new folder"
+        }
+        
+        response1 = self.client.post(url, invalid_data1)
+        response2 = self.client.post(url, invalid_data2)
+        
+        self.assertEqual(response1.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+        
+    
+    def test_update_folder_valid(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("update-folder")
+        
+        valid_data = {
+            "folder_id": self.folder1.id,
+            "folder_name": "new name",
+        }
+        
+        response = self.client.put(url, valid_data)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+    
+    def test_update_folder_forbidden(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("update-folder")
+        
+        forbidden_data = {
+            "folder_id": self.folder2.id,
+            "folder_name": "new name",
+        }
+        
+        response = self.client.put(url, forbidden_data)
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    
+    
+    def test_update_folder_invalid(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("update-folder")
+        
+        not_found_data = {
+            "folder_id": self.folder1.id + 1000,
+            "folder_name": "new name",
+        }
+        
+        invalid_data = {
+            "folder_name": "new name"
+        }
+        
+        response1 = self.client.put(url, not_found_data)
+        response2 = self.client.put(url, invalid_data)
+        
+        self.assertEqual(response1.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)        
+
+    
+    def test_delete_folder_valid(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse('delete-folder', kwargs={"pk": self.folder1.id})
+
+        response = self.client.delete(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    
+    
+    def test_delete_folder_forbidden(self):
+        self.client.force_authenticate(user=self.user)
+        forbidden_url = reverse('delete-folder', kwargs={"pk": self.folder2.id})
+
+        response = self.client.delete(forbidden_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    
+
+    def test_delete_folder_invalid(self):
+        self.client.force_authenticate(user=self.user)
+        invalid_url1 = reverse('delete-folder', kwargs={"pk": self.folder1.id + 100})
+
+        response1 = self.client.delete(invalid_url1)
+        
+        self.assertEqual(response1.status_code, status.HTTP_404_NOT_FOUND)
