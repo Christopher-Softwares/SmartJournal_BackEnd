@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 
 class CreateNoteAPIView(StandardCreateAPIView):
     serializer_class = AddNoteSerializer
-    # permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
+    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
     
     def perform_create(self, serializer):
         return serializer.save()
@@ -44,7 +44,7 @@ class CreateNoteAPIView(StandardCreateAPIView):
 
 class SaveNoteContentAPIView(StandardUpdateAPIView):
     serializer_class = SaveNoteContentSerializer
-    # permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
+    permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
     
     def get_object(self):
         note_id = self.request.data.get("note_id")
@@ -55,15 +55,15 @@ class SaveNoteContentAPIView(StandardUpdateAPIView):
         
     def update(self, request, *args, **kwargs):
         note = self.get_object()
-        
-        self.check_object_permissions(request, note)
-        
+  
         if not note:
             return standard_response(
                 errors = {"message": "Note with the given ID does not exist."},
                 status_code=status.HTTP_404_NOT_FOUND,
                 is_success=False,
             )
+
+        self.check_object_permissions(request, note)
 
         serializer = self.get_serializer(note, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -75,7 +75,7 @@ class SaveNoteContentAPIView(StandardUpdateAPIView):
 
 
 class FilterNotesView(generics.GenericAPIView):
-    # permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
+    permission_classes = [IsAuthenticated, permissions.IsWorkspaceOwnerOrMember]
     serializer_class = NotesFilterSerializer
     
     def post(self, request, *args, **kwargs):
@@ -142,7 +142,7 @@ class FilterNotesView(generics.GenericAPIView):
         
 
 class GetNoteContent(StandardRetrieveAPIView):
-    # permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
+    permission_classes = [IsAuthenticated, permissions.HasNoteInWorkspace]
     serializer_class = NoteContentSerializer
     
     def get_object(self):
