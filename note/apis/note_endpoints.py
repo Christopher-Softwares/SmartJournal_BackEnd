@@ -12,6 +12,11 @@ from note.models import Note
 from note import permissions
 from workspace.models import Workspace, Folder
 from django.shortcuts import get_object_or_404
+from rag.chroma.chroma_collection import *
+from rag.chroma.chroma_settings import ChromaDBConnectionSettings
+from rag.rag_manager import RagManager
+from rag.rag_settings import RagSettings
+from django.conf import settings
 
 
 class CreateNoteAPIView(StandardCreateAPIView):
@@ -69,6 +74,20 @@ class SaveNoteContentAPIView(StandardUpdateAPIView):
         serializer = self.get_serializer(note, data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+
+        chroma_settings = ChromaDBConnectionSettings(True, "https://christopher-smart-journal-chroma.liara.run/", 8000, "." + settings.MEDIA_URL + "chroma_db")
+        rag_settings = RagSettings(
+            openai_api_key = "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", 
+            chunk_size = 400)
+
+        connection_factory = ChromaDBConnectionFactory(settings= chroma_settings)
+
+        collectionManager = ChromaCollectionManager(connection_factory)
+        ragManager = RagManager(connection_factory, rag_settings)
+
+        collectionManager.create_collection('wspace_' + str(note.workspace_id))
+        ragManager.add_new_content(request.data['content'], collection_name = 'wspace_' +  str(note.workspace_id))
+
         return standard_response(
             data={"message": "Note content updated successfully."},
             status_code=status.HTTP_200_OK,
