@@ -17,6 +17,7 @@ class ChatAPITests(APITestCase):
 
         self.other_user = User.objects.create_user(email="otheruser@example.com", password="password123")
         self.workspace = Workspace.objects.create(name="Test Workspace", owner=self.user)
+        self.workspace2 = Workspace.objects.create(name="Test Workspace 2", owner=self.user)
         self.chat1 = Chat.objects.create(workspace=self.workspace, message="Hello", order=1, msg_type="client")
         self.chat2 = Chat.objects.create(workspace=self.workspace, message="Reply to Hello", order=2, msg_type="server", replied_to=self.chat1)
 
@@ -25,7 +26,7 @@ class ChatAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_list_workspace_chats_non_existent_workspace(self):
-        response = self.client.get("chat/999/messages/")
+        response = self.client.get("/chat/999/messages/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_new_prompt_success(self):
@@ -33,10 +34,10 @@ class ChatAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_new_prompt_non_existent_workspace(self):
-        response = self.client.post("chat/new_prompt/", {"workspace_id": 999, "prompt": "Invalid workspace"})
+        response = self.client.post("/chat/new_prompt/", {"workspace_id": 999, "prompt": "Invalid workspace"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_new_prompt_workspace_does_not_belong_to_user(self):
         other_workspace = Workspace.objects.create(name="Other Workspace", owner=self.other_user)
-        response = self.client.post("chat/new_prompt/", {"workspace_id": other_workspace.id, "prompt": "Forbidden access"})
+        response = self.client.post("/chat/new_prompt/", {"workspace_id": other_workspace.id, "prompt": "Forbidden access"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

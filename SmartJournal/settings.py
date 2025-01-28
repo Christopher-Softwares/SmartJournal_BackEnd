@@ -22,11 +22,11 @@ env = load_dotenv(os.path.join(BASE_DIR, ".env"))
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 # SECURITY WARNING: keep the secret key used in production secret!
 
-deploy = False
+deploy = True
 if(deploy):
     # deploy
     SECRET_KEY = os.getenv("SECRET_KEY")
-    DEBUG = os.getenv('DEBUG', 'LIARA_URL is not set.')
+    DEBUG = False
     
 else:
     # local
@@ -117,13 +117,9 @@ if(deploy):
     }
 else:
     DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'smart-journal',
-        'USER': 'root',
-        'PASSWORD': 'LCCs8HCir00CaMh3OyGEIgwS',
-        'HOST': 'cho-oyu.liara.cloud',
-        'PORT': '34893',
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',  
+            'NAME': BASE_DIR / 'db.sqlite3',  
         }
     } 
 
