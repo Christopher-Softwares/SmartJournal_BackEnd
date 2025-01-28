@@ -8,10 +8,9 @@ from django.shortcuts import get_object_or_404
 from users.models import CustomUser
 
 class WorkspaceViewSet(viewsets.ModelViewSet):
-    print("man injam")
-    # queryset = Workspace.objects.all()
-    # serializer_class = WorkspaceSerializer
-    # permission_classes = [IsAuthenticated]
+    queryset = Workspace.objects.all()
+    serializer_class = WorkspaceSerializer
+    permission_classes = [IsAuthenticated]
 
 class GetOwnedWorkspaces(APIView):
     permission_classes = [IsAuthenticated]

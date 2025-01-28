@@ -6,6 +6,12 @@ from rest_framework.permissions import IsAuthenticated
 from chat.serializer import ChatSerializer, PromptSerializer
 from workspace.models import Workspace
 from chat.models import Chat
+from rag.chroma.chroma_collection import *
+from rag.chroma.chroma_settings import ChromaDBConnectionSettings
+from rag.rag_manager import RagManager
+from rag.rag_settings import RagSettings
+from django.conf import settings
+
 
 class ListWorkspaceChats(ListAPIView):
     serializer_class = ChatSerializer
@@ -49,9 +55,22 @@ class NewPrompt(APIView):
                 msg_type="client", 
             )
 
+            try:
+                chroma_settings = ChromaDBConnectionSettings(True, "https://christopher-smart-journal-chroma.liara.run/", 8000, "." + settings.MEDIA_URL + "chroma_db")
+                rag_settings = RagSettings(
+                    openai_api_key = "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", 
+                    chunk_size = 400)
+
+                connection_factory = ChromaDBConnectionFactory(settings= chroma_settings)
+                ragManager = RagManager(connection_factory, rag_settings)
+
+                answer = ragManager.new_prompt(request.data['prompt'], 'wspace_' + str(request.data['workspace_id']))
+            except Exception as e:
+                answer = str(e.message)
+
             reply_chat = Chat.objects.create(
                 workspace=workspace,
-                message=f"Reply to: {prompt_chat.message}",
+                message=answer,
                 order=prompt_chat.order + 1,
                 replied_to=prompt_chat,
                 msg_type="server"

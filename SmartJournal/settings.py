@@ -118,11 +118,12 @@ if(deploy):
 else:
     DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'TEST': {
-                'NAME': ':memory:', 
-            },
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'smart-journal',
+        'USER': 'root',
+        'PASSWORD': 'LCCs8HCir00CaMh3OyGEIgwS',
+        'HOST': 'cho-oyu.liara.cloud',
+        'PORT': '34893',
         }
     } 
 
