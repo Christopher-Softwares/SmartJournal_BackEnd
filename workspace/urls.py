@@ -26,4 +26,4 @@ urlpatterns = [
     path('folder/create/', CreateFolderAPIView.as_view(), name='create-folder'),
     path('folders/<int:pk>/delete/', DeleteFolderAPIView.as_view(), name='delete-folder'),
     path('folder/update/', UpdateFolderAPIView.as_view(), name='update-folder'),
-]
+ ]
